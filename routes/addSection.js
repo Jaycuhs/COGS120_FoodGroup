@@ -1,14 +1,13 @@
-var data = require("../data.json");
+var data = require("../itemsList.json");
 
 exports.addSection = function(request, response) {
    
-	// Your code goes here
    var section = {
       "sectionName": request.query.sectionName,
-      "html": request.query.sectionName + ".html",
-      "id": request.query.sectionName
+      "categories": []
    }
    console.log(section);
-   data.sections.push(section);
+   data.Sections.push(section);
+   console.log("l (addSection): " + data.Sections.length);
    response.render('sections.handlebars', data);
 }

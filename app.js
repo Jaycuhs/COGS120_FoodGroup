@@ -11,12 +11,14 @@ var handlebars = require('express3-handlebars');
 var index = require('./routes/index');
 var addSection = require('./routes/addSection');
 var items = require('./routes/items');
+var addItem = require('./routes/addItem');
+var deleteItem = require('./routes/deleteItem');
+var addCategory = require('./routes/addCategory')
 var group = require('./routes/group');
 var addMember = require('./routes/addMember');
 var shoppingList = require('./routes/shoppingList');
 var sections = require('./routes/section');
-// Example route
-// var user = require('./routes/user');
+var addToList = require('./routes/addToList');
 
 var app = express();
 
@@ -44,22 +46,15 @@ if ('development' == app.get('env')) {
 app.get('/sections', sections.view);
 app.get('/addSection', addSection.addSection);
 app.get('/items', items.view);
+app.get('/addItem', addItem.addItem);
+app.get('/deleteItem', deleteItem.deleteItem);
+app.get('/addCategory', addCategory.addCategory);
 app.get('/group', group.view);
 app.get('/addMember', addMember.addMember);
 app.get('/shoppingList', shoppingList.view);
 app.get('/', index.view);
-// Example route
-// app.get('/users', user.list);
+app.get('/addToList', addToList.addToList);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
 });
-
-// Handlebars Helpers
-/*handlebars.registerHelper('ifEquals', function (arg1, arg2, options) {
-   return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
-});
-
-handlebars.registerHelper("setVar", function (varName, varValue, options) {
-   options.data.root[varName] = varValue;
-});*/

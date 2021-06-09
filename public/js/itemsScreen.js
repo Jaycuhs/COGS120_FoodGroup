@@ -1,73 +1,4 @@
-var items = [
-   {
-      "itemName": "Milk",
-      "section": "Fridge",
-      "category": "Dairy",
-      "expiration": "2020-02-19",
-      "notification": "3 day",
-      "shared": "TRUE"
-   },
-   {
-      "itemName": "Chedder",
-      "section": "Fridge",
-      "category": "Dairy",
-      "expiration": "2020-02-15",
-      "notification": "3 day",
-      "shared": "TRUE"
-   },
-   {
-      "itemName": "Greek Yogurt",
-      "section": "Fridge",
-      "category": "Dairy",
-      "expiration": "2020-03-01",
-      "notification": "1 day",
-      "shared": "TRUE"
-   },
-   {
-      "itemName": "Apples",
-      "section": "Fridge",
-      "category": "Fruit",
-      "expiration": "2020-02-17",
-      "notification": "1 day",
-      "shared": "TRUE"
-   },
-   {
-      "itemName": "Carrots",
-      "section": "Fridge",
-      "category": "Vegetable",
-      "expiration": "2020-03-04",
-      "notification": "4 day",
-      "shared": "TRUE"
-   },
-   {
-      "itemName": "Doritos",
-      "section": "Pantry",
-      "category": "Snack",
-      "expiration": "2020-11-27",
-      "notification": "1 day",
-      "shared": "TRUE"
-   }
-]
-
-var categories = [
-   {
-      "categoryName": "Dairy",
-      "section": "Fridge"
-   },
-   {
-      "categoryName": "Fruit",
-      "section": "Fridge"
-   },
-   {
-      "categoryName": "Vegetable",
-      "section": "Fridge"
-   }
-]
-
-/**
-   define javascript object var to hold the items data,
-   loop through it to display items and categories correctly in initializePage
-*/
+var section;
 
 // Call this function when the page loads (the "ready" event)
 $(document).ready(function () {
@@ -78,42 +9,113 @@ $(document).ready(function () {
  * Function that is called when the document is ready.
  */
 function initializePage() {
-   $("#items").html("");
-   
-   for (var i = 0; i < categories.length; ++i) {
-      addCategory(categories[i].categoryName);
-      for (var j = 0; j < items.length; j++) {
-         if (items[j].category == categories[i].categoryName) {
-            addItem(items[j].itemName, items[j].expiration);
+   var isin = false;
+   var sections = $('#items').find('div'); //Get all sections
+   var url = window.location.href;
+
+   url = url.substring(url.lastIndexOf("/"));
+   console.log(url.substring(0, 4));
+   if (url.substring(0, 4) != "/add") {
+      section = window.location.href; //Current section passed through url from '/sections' page
+
+      //reformat from the url to only get section
+      var ind = section.lastIndexOf('#') + 1;
+      section = section.substring(ind);
+      section = section.replace("%20", " ");
+      window.name = section;
+   }
+   section = window.name;
+   console.log("Section: " + section);
+   //if (section != "All Items") {
+      //Loop to remove items that aren't in the current section
+      for (var i = 0; i < sections.length; i++) {
+         console.log("js section: " + sections[i]);
+         if (sections[i].id != section) {
+            document.getElementById(sections[i].id).innerHTML = "";
+            //$('#' + sections[i].id).html("");
          }
       }
+
+      //Removes category options that aren't in the section
+      var options = $('select[name="category"] option'); //All category options in list
+      //var categories = $("#" + section + " h2").toArray(); //Categories in the section
+      var categories = document.getElementById(section).getElementsByClassName("category-list");
+      console.log("this: " + categories);
+      for (var i = 0; i < options.length; i++) {
+         for (var j = 0; j < categories.length; j++) {
+            console.log("o: " + options[i].value + " c: " + categories[j].innerText); //debug prints
+            console.log(options[i].value == categories[j].innerText);                 //debug prints
+            if (options[i].value == "select" || options[i].value == categories[j].innerText) {
+               isin = true;
+               break;
+            }
+         }
+         if (!isin) {
+            $('select option[value="' + options[i].value + '"]').remove();
+         }
+         isin = false;
+      }
+	  $('select[name="category"]').prop("selectedIndex", -1);
+	  var $inputs = $('select[name=category],input[name=cat]');
+	  $inputs.on('input', function () {
+        // Set the required property of the other input to false if this input is not empty.
+        $inputs.not(this).prop('required', !$(this).val().length);
+    });
+   //}
+
+   // hide shared items from other people
+   var share = document.getElementsByClassName("on");
+   for (var i = 0; i < share.length; i++) {
+      share[i].style.display = "none";
    }
 
-   $('.item').click(itemClick);
+   $('input[name=showShared').click(shared);
+   $('.sect').val(section);
+   //$('.item').click(itemClick);
+   $('.close').click(close);
+   $('#addCatbtn').click(analytics);
+   $('#addItemForm').on('submit', typed);
 }
 
-function addItem(str, exp) {
-   var itemHTML = "<li class='item'><a id='" + str + "'class='alignleft'>" + str + "</a><a class='alignright'>" + exp
-                  + "</a></li>";
-   $("#items").append(itemHTML);
+function close(e) {
+	e.preventDefault();
+	
+	var modal = document.getElementById("myModal");
+    var itemInfo = document.getElementById("itemClick");
+    var catModal = document.getElementById("newCat");
+   
+    modal.style.display = "none";
+    itemInfo.style.display = "none";
+    catModal.style.display = "none";
 }
 
-function addCategory(cat) {
-   var catHTML = "<li class=category><a id='" + cat + "'>" + cat + "</a></li>";
-   /*var ul = document.getElementById("items");
-   var li = document.createElement("li");
-   var aleft = document.createElement("a");
-   li.setAttribute("class", "category");
-   aleft.setAttribute("class", "alignleft");
-   aleft.appendChild(document.createTextNode(cat));
-   li.appendChild(aleft);
-   ul.appendChild(li);*/
-   console.log(catHTML);
-   $("#items").append(catHTML);
+function analytics(e) {
+   e.preventDefault();
+   ga("send", "event", 'add category', 'click');
+}
+
+function typed(e) {
+   if ($('input[name=cat]').val().length != 0) {
+      ga("send", "event", 'new category', 'typing');
+   }   
+}
+
+function shared(e) {
+   var shared = document.getElementsByClassName("on");
+   if ($(this).is(":checked")) {
+      console.log("showing shared items...");
+      for (var i = 0; i < shared.length; i++) {
+         console.log(shared[i]);
+         shared[i].style.display = "block";
+      }
+   } else {
+      console.log("showing my items...");
+      initializePage();
+   }
 }
 
 function confirmItembtn(e) {
-   console.log("btn press");
+   /*console.log("btn press");
    e.preventDefault();
    
    var item = {
@@ -125,11 +127,11 @@ function confirmItembtn(e) {
       "shared": "TRUE"
    }
 
-   items.push(item);
+   data.items.push(item);
    var modal = document.getElementById("myModal");
    modal.style.display = "none";
    document.getElementById("addItemForm").reset();
-   initializePage();
+   initializePage();*/
 }
 
 function confirmMemberbtn(e) {
@@ -148,51 +150,48 @@ function itemClick(e) {
 
    var ind;
    var itemName = e.target.id;
+   console.log("item clicked: " + itemName);
    var modal = document.getElementById("itemClick");
 
    //$('#itemClickHeader').html(itemName);
-   for (ind = 0; ind < items.length; ++ind) {
-      if (itemName == items[ind].itemName)
-         break;
-   }
    $('input[name="itemName"]').val(itemName);
-   $('input[name="category"]').val(items[ind].category);
-   $('input[name="expiration"]').val(items[ind].expiration);
-   $('input[name="notification"]').val(items[ind].notification);
+   $('input[name="category"]').val();
+   $('input[name="expiration"]').val();
+   $('input[name="notification"]').val();
 
    //Delete item if button is clicked
-   $('#deleteItemBtn').click = function deleteItem(e) {
-      alert("delete");
-      $(itemName).remove();
-      items[ind] = 0;
-   }
+   $('#deleteItemBtn').click(deleteItem);
 
    modal.style.display = "block";
+   var span = document.getElementsByClassName("close")[1];
+   span.onclick = function () {
+      modal.style.display = "none";
+   }
+}
 
+function deleteItem(e) {
+   console.log("delete");
 }
 
 window.onload = function () {
 
-   //var data = JSON.parse(data.json);
-
    var modal = document.getElementById("myModal");
    var itemInfo = document.getElementById("itemClick");
+   var catModal = document.getElementById("newCat");
 
    // Get the button that opens the modal
-   var btn = document.getElementById("addItembtn");
-
-   // Get the <span> element that closes the modal
-   var span = document.getElementsByClassName("close")[0];
+   var itembtn = document.getElementById("addItembtn");
+   var catbtn = document.getElementById("addCatbtn");
 
    // When the user clicks the button, open the modal 
-   btn.onclick = function () {
+   itembtn.onclick = function () {
       modal.style.display = "block";
    }
-
-   // When the user clicks on <span> (x), close the modal
-   span.onclick = function () {
-      modal.style.display = "none";
-      itemInfo.style.display = "none";
+	
+   if(catbtn){
+	   catbtn.onclick = function () {
+		  catModal.style.display = "block";
+	   }
    }
 
    // When the user clicks anywhere outside of the modal, close it
@@ -201,8 +200,10 @@ window.onload = function () {
          modal.style.display = "none";
       } else if (event.target == itemInfo) {
          itemInfo.style.display = "none";
+      } else if (event.target === catModal) {
+         catModal.style.display = "none";
       }
    }
 
-   $("#confirmItembtn").click(confirmItembtn);
+   //$("#confirmItembtn").click(confirmItembtn);
 };
